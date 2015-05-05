@@ -46,7 +46,7 @@ Module P2.
   Ltac disprover H n :=
     match type of H with
     | forall _, _ => genlist n (@nil bool) ltac:(fun l =>
-                                                   idtac l; specialize (H l); disprover H n)
+                                                   specialize (H l); disprover H n)
     | _ = _ => discriminate
     end.
 
