@@ -72,3 +72,47 @@ Module P2.
     disprove 4.
   Abort.
 End P2.
+
+Module P3.
+  Ltac mkVar T k :=
+    let x := fresh in
+    evar (x : T); let y := eval unfold x in x
+                    in clear x; k y.
+
+  Ltac inst T k :=
+    match T with
+    | (?T1 * ?T2)%type => inst T1 ltac:(fun t1 =>
+                                          inst T2 ltac:(fun t2 =>
+                                                          k (t1, t2)))
+    | unit => k tt
+    | _ => mkVar T k
+    end.
+
+  Ltac au :=
+    match goal with
+    | [|- ex (A := ?T) _] => inst T ltac:(fun t =>
+                                            exists t; simpl; au)
+    | _ => eauto
+    end.
+  
+  Theorem test1 : exists x, x = 0.
+  Proof.
+    au.
+  Qed.
+
+  Theorem test2 : exists x : unit, 0 = 0.
+  Proof.
+    au.
+  Qed.
+
+  Theorem test3 : exists x : nat * nat, fst x = 7 /\ snd x = 2 + fst x.
+  Proof.
+    au.
+  Qed.
+
+  Theorem test4 : exists x : (unit * nat) * (nat * bool),
+      snd (fst x) = 7 /\ fst (snd x) = 2 + snd (fst x) /\ snd (snd x) = true.
+  Proof.
+    au.
+  Qed.
+End P3.
