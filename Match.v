@@ -116,3 +116,39 @@ Module P3.
     au.
   Qed.
 End P3.
+
+Module P4.
+  Variable G : Type.
+  Variable e : G.
+  Variable f : G -> G -> G.
+  Variable i : G -> G.
+
+  Infix "*" := f.
+
+  Hypothesis Assoc : forall a b c, a * b * c = a * (b * c).
+  Hypothesis RightIdent : forall a, a * e = a.
+  Hypothesis RightInv : forall a, a * i a = e.
+
+  Ltac each xs k :=
+    match xs with
+    | (?x, ?xs') => solve [k x | each xs' k]
+    end.
+  
+  Ltac rewriter rules n :=
+    try reflexivity;
+    match n with
+    | S ?n' => each rules ltac:(fun r => rewrite r; rewriter rules n')
+    end.
+
+  Ltac rewr n := rewriter (Assoc, (RightInv, (RightIdent, tt))) n.  
+  
+  Theorem test1 : forall a b, a * b * i b = a.
+  Proof.
+    intros. rewr 3.
+  Qed.
+  
+  Theorem test2 : forall a, a * e * i a * i e = e.
+  Proof.
+    intros. rewr 3.
+  Qed.
+End P4.
